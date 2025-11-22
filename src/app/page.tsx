@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Sidebar } from '@/components/Sidebar';
 import { TaskList } from '@/components/TaskList';
@@ -11,18 +10,11 @@ export default function Home() {
   const [currentView, setCurrentView] = useState<ViewType>('today');
   const [currentList, setCurrentList] = useState<number | undefined>();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [filters, setFilters] = useState<TaskFilters>({
-    view: 'today',
+  const filters: TaskFilters = {
+    view: currentView,
+    listId: currentList,
     showCompleted: true,
-  });
-
-  useEffect(() => {
-    setFilters({
-      view: currentView,
-      listId: currentList,
-      showCompleted: true,
-    });
-  }, [currentView, currentList]);
+  };
 
   const handleViewChange = (view: ViewType) => {
     setCurrentView(view);

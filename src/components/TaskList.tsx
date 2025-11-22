@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useCallback } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import { Search, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -50,7 +50,7 @@ export function TaskList({ filters, className }: TaskListProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
 
   const handleTaskCreate = async (taskData: CreateTaskData) => {
     try {

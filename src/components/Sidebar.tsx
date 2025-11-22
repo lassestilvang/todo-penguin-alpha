@@ -1,22 +1,18 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Inbox, 
   Calendar, 
   Clock, 
   ListTodo, 
   CheckCircle2, 
   Plus,
   Search,
-  Hash,
-  Tag,
-  ChevronDown,
-  ChevronRight,
-  X,
   Edit,
-  Trash2
+  Trash2,
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -74,7 +70,7 @@ export function Sidebar({
       ]);
       setLists(listsData);
       setLabels(labelsData);
-      setTodayTaskCount(todayTasks.length);
+      setTodayCount(todayTasks.length);
       
       // Load task counts for each list
       const counts: Record<number, number> = {};
@@ -90,10 +86,6 @@ export function Sidebar({
       console.error('Failed to load data:', error);
     }
   }, []);
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
 
   const toggleSection = (section: 'lists' | 'labels') => {
     setExpandedSections(prev => ({
@@ -172,26 +164,6 @@ export function Sidebar({
       await loadData();
     } catch (error) {
       console.error('Failed to save label:', error);
-    }
-  };
-
-  const getTaskCount = async (type: 'today' | 'overdue' | 'list', id?: number) => {
-    try {
-      switch (type) {
-        case 'today':
-          const tasks = await ClientTaskService.getTasks('today', false);
-          return tasks.length;
-        case 'overdue':
-          return overdueCount;
-        case 'list':
-          // Note: We'll need to add list task count API endpoint
-          return id ? 0 : 0;
-        default:
-          return 0;
-      }
-    } catch (error) {
-      console.error('Failed to get task count:', error);
-      return 0;
     }
   };
 

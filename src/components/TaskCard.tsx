@@ -2,12 +2,9 @@
 
 import { motion } from 'framer-motion';
 import { 
-  Calendar,
   Clock,
-  MoreHorizontal,
   Edit,
   Trash2,
-  CheckCircle,
   Circle,
   AlertCircle,
   CheckCircle2,

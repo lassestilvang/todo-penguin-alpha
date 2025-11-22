@@ -180,7 +180,7 @@ export class TaskService {
     if (!task) return null;
 
     // Load related data
-    task.list = db.prepare('SELECT * FROM lists WHERE id = ?').get(task.list_id) as List | null;
+    task.list = db.prepare('SELECT * FROM lists WHERE id = ?').get(task.list_id) as List | undefined;
     task.labels = db.prepare(`
       SELECT l.* FROM labels l
       JOIN task_labels tl ON l.id = tl.label_id
