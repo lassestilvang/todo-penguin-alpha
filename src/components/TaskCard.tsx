@@ -30,9 +30,10 @@ interface TaskCardProps {
   task: Task;
   onUpdate: (taskId: number, updates: any) => void;
   onDelete: (taskId: number) => void;
+  onEdit: (task: Task) => void;
 }
 
-export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
+export function TaskCard({ task, onUpdate, onDelete, onEdit }: TaskCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const handleStatusChange = (newStatus: 'pending' | 'in_progress' | 'completed') => {
@@ -140,7 +141,10 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
                     Reset
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-gray-700" />
-                  <DropdownMenuItem className="text-gray-300 hover:bg-gray-700 hover:text-white">
+                  <DropdownMenuItem 
+                    onClick={() => onEdit(task)}
+                    className="text-gray-300 hover:bg-gray-700 hover:text-white"
+                  >
                     <Edit className="w-4 h-4 mr-2" />
                     Edit
                   </DropdownMenuItem>

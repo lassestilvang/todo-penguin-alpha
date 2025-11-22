@@ -24,6 +24,7 @@ export function TaskList({ filters, className }: TaskListProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showCompleted, setShowCompleted] = useState(true);
   const [showTaskForm, setShowTaskForm] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [sortBy, setSortBy] = useState<'date' | 'priority' | 'created'>('date');
 
   useEffect(() => {
@@ -59,11 +60,18 @@ export function TaskList({ filters, className }: TaskListProps) {
 
   const handleTaskCreate = async (taskData: any) => {
     try {
-      const newTask = await ClientTaskService.createTask(taskData);
-      setTasks(prev => [newTask, ...prev]);
+      if (editingTask) {
+        // Update existing task
+        await ClientTaskService.updateTask(editingTask.id, taskData);
+        setEditingTask(null);
+      } else {
+        // Create new task
+        await ClientTaskService.createTask(taskData);
+      }
       setShowTaskForm(false);
+      loadData();
     } catch (error) {
-      console.error('Error creating task:', error);
+      console.error('Error saving task:', error);
     }
   };
 
@@ -83,6 +91,11 @@ export function TaskList({ filters, className }: TaskListProps) {
     } catch (error) {
       console.error('Error deleting task:', error);
     }
+  };
+
+  const handleTaskEdit = (task: Task) => {
+    setEditingTask(task);
+    setShowTaskForm(true);
   };
 
   const filteredTasks = tasks.filter(task => {
@@ -163,7 +176,10 @@ export function TaskList({ filters, className }: TaskListProps) {
           
           <div className="flex items-center gap-2">
             <Button
-              onClick={() => setShowTaskForm(true)}
+              onClick={() => {
+                setEditingTask(null);
+                setShowTaskForm(true);
+              }}
               className="bg-blue-600 hover:bg-blue-700 text-white"
               size="sm"
             >
@@ -220,7 +236,10 @@ export function TaskList({ filters, className }: TaskListProps) {
             </div>
             {!searchQuery && (
               <Button
-                onClick={() => setShowTaskForm(true)}
+                onClick={() => {
+                  setEditingTask(null);
+                  setShowTaskForm(true);
+                }}
                 variant="outline"
                 className="border-gray-700 text-gray-300 hover:bg-gray-800"
               >
@@ -238,6 +257,7 @@ export function TaskList({ filters, className }: TaskListProps) {
                   task={task}
                   onUpdate={handleTaskUpdate}
                   onDelete={handleTaskDelete}
+                  onEdit={handleTaskEdit}
                 />
               ))}
             </AnimatePresence>
@@ -249,10 +269,14 @@ export function TaskList({ filters, className }: TaskListProps) {
       <AnimatePresence>
         {showTaskForm && (
           <TaskForm
+            task={editingTask || undefined}
             lists={lists}
             labels={labels}
             onSubmit={handleTaskCreate}
-            onCancel={() => setShowTaskForm(false)}
+            onCancel={() => {
+              setShowTaskForm(false);
+              setEditingTask(null);
+            }}
           />
         )}
       </AnimatePresence>
