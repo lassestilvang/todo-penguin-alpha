@@ -291,17 +291,17 @@ export function TaskForm({ task, lists, labels, onSubmit, onCancel, className }:
                 <div>
                   <Label htmlFor="recurring" className="text-white">Recurring</Label>
                   <Select
-                    value={formData.recurring_type || ''}
+                    value={formData.recurring_type || 'none'}
                     onValueChange={(value) => setFormData(prev => ({ 
                       ...prev, 
-                      recurring_type: value || undefined 
+                      recurring_type: value === 'none' ? undefined : value 
                     }))}
                   >
                     <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
                       <SelectValue placeholder="Not recurring" />
                     </SelectTrigger>
                     <SelectContent className="bg-gray-800 border-gray-700">
-                      <SelectItem value="">Not recurring</SelectItem>
+                      <SelectItem value="none">Not recurring</SelectItem>
                       <SelectItem value="daily">Daily</SelectItem>
                       <SelectItem value="weekly">Weekly</SelectItem>
                       <SelectItem value="weekdays">Weekdays</SelectItem>
