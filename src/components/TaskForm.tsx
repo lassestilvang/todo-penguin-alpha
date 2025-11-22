@@ -2,15 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, Calendar, Clock, Flag, Tag, Repeat, Paperclip } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
 import { Task, List, Label as LabelType, CreateTaskData } from '@/types';
 import { ClientListService, ClientLabelService, ClientTaskService } from '@/lib/client-services';
 import { parseNaturalLanguage } from '@/lib/utils';
@@ -57,7 +55,7 @@ export function TaskForm({ task, lists, labels, onSubmit, onCancel, className }:
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    let finalData = { ...formData };
+    const finalData = { ...formData };
 
     // Parse natural language if it's a new task
     if (!task && formData.name) {

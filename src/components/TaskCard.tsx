@@ -22,19 +22,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Task } from '@/types';
+import { Task, UpdateTaskData } from '@/types';
 import { format, isToday, isPast, isFuture } from 'date-fns';
 import { formatMinutes } from '@/lib/utils';
 
 interface TaskCardProps {
   task: Task;
-  onUpdate: (taskId: number, updates: any) => void;
+  onUpdate: (taskId: number, updates: UpdateTaskData) => void;
   onDelete: (taskId: number) => void;
   onEdit: (task: Task) => void;
 }
 
 export function TaskCard({ task, onUpdate, onDelete, onEdit }: TaskCardProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
 
   const handleStatusChange = (newStatus: 'pending' | 'in_progress' | 'completed') => {
     onUpdate(task.id, { status: newStatus });
@@ -68,8 +67,9 @@ export function TaskCard({ task, onUpdate, onDelete, onEdit }: TaskCardProps) {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
+    const now = new Date();
     if (isToday(date)) return 'Today';
-    if (isFuture(date) && date.getTime() - Date.now() < 86400000) return 'Tomorrow';
+    if (isFuture(date) && date.getTime() - now.getTime() < 86400000) return 'Tomorrow';
     return format(date, 'MMM d');
   };
 

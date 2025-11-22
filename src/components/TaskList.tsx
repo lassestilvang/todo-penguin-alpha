@@ -1,15 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Plus, Calendar, CheckCircle, Circle, Clock, AlertCircle } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { TaskCard } from './TaskCard';
 import { TaskForm } from './TaskForm';
 import { ClientTaskService, ClientListService, ClientLabelService } from '@/lib/client-services';
-import { Task, TaskFilters, List, Label } from '@/types';
+import { Task, TaskFilters, List, Label, CreateTaskData } from '@/types';
 
 interface TaskListProps {
   filters: TaskFilters;
@@ -27,17 +27,13 @@ export function TaskList({ filters, className }: TaskListProps) {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [sortBy, setSortBy] = useState<'date' | 'priority' | 'created'>('date');
 
-  useEffect(() => {
-    loadData();
-  }, [filters]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const [tasksData, listsData, labelsData] = await Promise.all([
         ClientTaskService.getTasks('all', true), // We'll need to add filtering support
         ClientListService.getLists(),
-        ClientLabelService.getLabels(),
+        ClientLabelService.getLabels()
       ]);
       // Apply filters client-side for now (excluding showCompleted and searchQuery which are handled locally)
       const filteredTasks = tasksData.filter(task => {
@@ -56,7 +52,7 @@ export function TaskList({ filters, className }: TaskListProps) {
     }
   };
 
-  const handleTaskCreate = async (taskData: any) => {
+  const handleTaskCreate = async (taskData: CreateTaskData) => {
     try {
       if (editingTask) {
         // Update existing task
@@ -73,7 +69,7 @@ export function TaskList({ filters, className }: TaskListProps) {
     }
   };
 
-  const handleTaskUpdate = async (taskId: number, updates: any) => {
+  const handleTaskUpdate = async (taskId: number, updates: Partial<Task>) => {
     try {
       await ClientTaskService.updateTask(taskId, updates);
       loadData();
@@ -204,7 +200,7 @@ export function TaskList({ filters, className }: TaskListProps) {
           
           <select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
+            onChange={(e) => setSortBy(e.target.value as 'date' | 'priority' | 'created')}
             className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm"
           >
             <option value="date">Sort by Date</option>
