@@ -14,7 +14,7 @@ export class LabelService {
     if (!existing) return null;
 
     const updates: string[] = [];
-    const values: any[] = [];
+    const values: (string | number)[] = [];
 
     if (data.name !== undefined) {
       updates.push('name = ?');

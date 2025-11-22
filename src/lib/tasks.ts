@@ -1,6 +1,6 @@
 import { db } from './db';
-import { Task, CreateTaskData, UpdateTaskData, ActivityLog } from '@/types';
-import { format, isToday, addDays, parseISO } from 'date-fns';
+import { Task, CreateTaskData, UpdateTaskData, List, Label, Reminder, Attachment, ActivityLog } from '@/types';
+import { format, addDays } from 'date-fns';
 
 export class TaskService {
   private static logActivity(taskId: number, action: string, oldValue?: string, newValue?: string): void {
@@ -53,7 +53,7 @@ export class TaskService {
     if (!existingTask) return null;
 
     const updates: string[] = [];
-    const values: any[] = [];
+    const values: (string | number | null)[] = [];
 
     // Build dynamic update query
     if (data.name !== undefined) {
@@ -180,32 +180,32 @@ export class TaskService {
     if (!task) return null;
 
     // Load related data
-    task.list = db.prepare('SELECT * FROM lists WHERE id = ?').get(task.list_id) as any;
+    task.list = db.prepare('SELECT * FROM lists WHERE id = ?').get(task.list_id) as List | null;
     task.labels = db.prepare(`
       SELECT l.* FROM labels l
       JOIN task_labels tl ON l.id = tl.label_id
       WHERE tl.task_id = ?
-    `).all(task.id) as any[];
+    `).all(task.id) as Label[];
     
     task.subtasks = db.prepare(`
       SELECT * FROM tasks WHERE parent_task_id = ?
       ORDER BY created_at ASC
-    `).all(task.id) as any[];
+    `).all(task.id) as Task[];
 
     task.reminders = db.prepare(`
       SELECT * FROM reminders WHERE task_id = ?
       ORDER BY remind_at ASC
-    `).all(task.id) as any[];
+    `).all(task.id) as Reminder[];
 
     task.attachments = db.prepare(`
       SELECT * FROM attachments WHERE task_id = ?
       ORDER BY created_at DESC
-    `).all(task.id) as any[];
+    `).all(task.id) as Attachment[];
 
     task.activity_logs = db.prepare(`
       SELECT * FROM activity_logs WHERE task_id = ?
       ORDER BY changed_at DESC
-    `).all(task.id) as any[];
+    `).all(task.id) as ActivityLog[];
 
     return task;
   }
@@ -223,7 +223,7 @@ export class TaskService {
     showCompleted?: boolean;
   }): Task[] {
     let query = 'SELECT * FROM tasks WHERE 1=1';
-    const params: any[] = [];
+    const params: (string | number | null)[] = [];
 
     if (filters?.listId) {
       query += ' AND list_id = ?';

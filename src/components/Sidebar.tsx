@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Inbox, 
@@ -65,11 +65,7 @@ export function Sidebar({
   const [editingList, setEditingList] = useState<List | null>(null);
   const [editingLabel, setEditingLabel] = useState<Label | null>(null);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [listsData, labelsData, todayTasks] = await Promise.all([
         ClientListService.getLists(),
@@ -78,7 +74,7 @@ export function Sidebar({
       ]);
       setLists(listsData);
       setLabels(labelsData);
-      setTodayCount(todayTasks.length);
+      setTodayTaskCount(todayTasks.length);
       
       // Load task counts for each list
       const counts: Record<number, number> = {};
@@ -93,7 +89,11 @@ export function Sidebar({
     } catch (error) {
       console.error('Failed to load data:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const toggleSection = (section: 'lists' | 'labels') => {
     setExpandedSections(prev => ({

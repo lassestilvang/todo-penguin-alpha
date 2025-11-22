@@ -1,20 +1,20 @@
 'use client';
 
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
-  CheckCircle2, 
-  Circle, 
-  Clock, 
-  AlertCircle, 
-  MoreVertical,
+  Calendar,
+  Clock,
+  MoreHorizontal,
   Edit,
   Trash2,
+  CheckCircle,
+  Circle,
+  AlertCircle,
+  CheckCircle2,
   Play,
-  Pause
+  MoreVertical
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { 
   DropdownMenu,
   DropdownMenuContent,

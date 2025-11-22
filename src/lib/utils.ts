@@ -38,7 +38,7 @@ export function parseNaturalLanguage(input: string): {
   
   // Check for time patterns like "1 PM", "13:00", etc.
   const timeMatch = input.match(/\bat\s+(\d{1,2})\s*(?:AM|PM|am|pm)|\bat\s+(\d{1,2}):(\d{2})/);
-  let hasDateWord = lowerInput.includes('today') || lowerInput.includes('tomorrow');
+  const hasDateWord = lowerInput.includes('today') || lowerInput.includes('tomorrow');
   
   if (timeMatch) {
     if (timeMatch[1]) {
