@@ -12,9 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Task, List, Label as LabelType, CreateTaskData } from '@/types';
-import { ListService } from '@/lib/lists';
-import { LabelService } from '@/lib/labels';
-import { TaskService } from '@/lib/tasks';
+import { ClientListService, ClientLabelService, ClientTaskService } from '@/lib/client-services';
 import { parseNaturalLanguage } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 

@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { TaskCard } from './TaskCard';
 import { TaskForm } from './TaskForm';
-import { TaskService, ListService, LabelService } from '@/lib/services';
+import { ClientTaskService, ClientListService, ClientLabelService } from '@/lib/client-services';
 import { Task, TaskFilters, List, Label } from '@/types';
 
 interface TaskListProps {
@@ -34,11 +34,21 @@ export function TaskList({ filters, className }: TaskListProps) {
     setLoading(true);
     try {
       const [tasksData, listsData, labelsData] = await Promise.all([
-        TaskService.getTasks({ ...filters, searchQuery }),
-        ListService.getAllLists(),
-        LabelService.getAllLabels(),
+        ClientTaskService.getTasks('all', true), // We'll need to add filtering support
+        ClientListService.getLists(),
+        ClientLabelService.getLabels(),
       ]);
-      setTasks(tasksData);
+      // Apply filters client-side for now
+      const filteredTasks = tasksData.filter(task => {
+        if (filters.listId && task.list_id !== filters.listId) return false;
+        if (filters.priority && task.priority !== filters.priority) return false;
+        if (filters.status && task.status !== filters.status) return false;
+        if (filters.date && task.date !== filters.date) return false;
+        if (filters.searchQuery && !task.name.toLowerCase().includes(filters.searchQuery.toLowerCase())) return false;
+        if (!filters.showCompleted && task.status === 'completed') return false;
+        return true;
+      });
+      setTasks(filteredTasks);
       setLists(listsData);
       setLabels(labelsData);
     } catch (error) {
@@ -48,20 +58,32 @@ export function TaskList({ filters, className }: TaskListProps) {
     }
   };
 
-  const handleTaskCreate = (taskData: any) => {
-    const newTask = TaskService.createTask(taskData);
-    setTasks(prev => [newTask, ...prev]);
-    setShowTaskForm(false);
+  const handleTaskCreate = async (taskData: any) => {
+    try {
+      const newTask = await ClientTaskService.createTask(taskData);
+      setTasks(prev => [newTask, ...prev]);
+      setShowTaskForm(false);
+    } catch (error) {
+      console.error('Error creating task:', error);
+    }
   };
 
-  const handleTaskUpdate = (taskId: number, updates: any) => {
-    TaskService.updateTask(taskId, updates);
-    loadData();
+  const handleTaskUpdate = async (taskId: number, updates: any) => {
+    try {
+      await ClientTaskService.updateTask(taskId, updates);
+      loadData();
+    } catch (error) {
+      console.error('Error updating task:', error);
+    }
   };
 
-  const handleTaskDelete = (taskId: number) => {
-    TaskService.deleteTask(taskId);
-    setTasks(prev => prev.filter(task => task.id !== taskId));
+  const handleTaskDelete = async (taskId: number) => {
+    try {
+      await ClientTaskService.deleteTask(taskId);
+      setTasks(prev => prev.filter(task => task.id !== taskId));
+    } catch (error) {
+      console.error('Error deleting task:', error);
+    }
   };
 
   const filteredTasks = tasks.filter(task => {

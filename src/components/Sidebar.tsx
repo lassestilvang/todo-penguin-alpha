@@ -20,9 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { List, Label, ViewType } from '@/types';
-import { ListService } from '@/lib/lists';
-import { LabelService } from '@/lib/labels';
-import { TaskService } from '@/lib/tasks';
+import { ClientListService, ClientLabelService, ClientTaskService } from '@/lib/client-services';
 import { cn } from '@/lib/utils';
 
 interface SidebarProps {
@@ -52,6 +50,8 @@ export function Sidebar({
   const [searchQuery, setSearchQuery] = useState('');
   const [showCompleted, setShowCompleted] = useState(true);
   const [overdueCount, setOverdueCount] = useState(0);
+  const [todayCount, setTodayCount] = useState(0);
+  const [listTaskCounts, setListTaskCounts] = useState<Record<number, number>>({});
   const [expandedSections, setExpandedSections] = useState({
     lists: true,
     labels: true,
@@ -61,10 +61,30 @@ export function Sidebar({
     loadData();
   }, []);
 
-  const loadData = () => {
-    setLists(ListService.getAllLists());
-    setLabels(LabelService.getAllLabels());
-    setOverdueCount(TaskService.getOverdueTasks().length);
+  const loadData = async () => {
+    try {
+      const [listsData, labelsData, todayTasks] = await Promise.all([
+        ClientListService.getLists(),
+        ClientLabelService.getLabels(),
+        ClientTaskService.getTasks('today', false)
+      ]);
+      setLists(listsData);
+      setLabels(labelsData);
+      setTodayCount(todayTasks.length);
+      
+      // Load task counts for each list
+      const counts: Record<number, number> = {};
+      for (const list of listsData) {
+        // Note: We'll need to add list-specific task count API
+        counts[list.id] = 0;
+      }
+      setListTaskCounts(counts);
+      
+      // Note: We'll need to add overdue count API endpoint
+      setOverdueCount(0);
+    } catch (error) {
+      console.error('Failed to load data:', error);
+    }
   };
 
   const toggleSection = (section: 'lists' | 'labels') => {
@@ -79,16 +99,23 @@ export function Sidebar({
     // This will be handled by the parent component
   };
 
-  const getTaskCount = (type: 'today' | 'overdue' | 'list', id?: number) => {
-    switch (type) {
-      case 'today':
-        return TaskService.getTasksByView('today', false).length;
-      case 'overdue':
-        return overdueCount;
-      case 'list':
-        return id ? ListService.getTaskCount(id) : 0;
-      default:
-        return 0;
+  const getTaskCount = async (type: 'today' | 'overdue' | 'list', id?: number) => {
+    try {
+      switch (type) {
+        case 'today':
+          const tasks = await ClientTaskService.getTasks('today', false);
+          return tasks.length;
+        case 'overdue':
+          return overdueCount;
+        case 'list':
+          // Note: We'll need to add list task count API endpoint
+          return id ? 0 : 0;
+        default:
+          return 0;
+      }
+    } catch (error) {
+      console.error('Failed to get task count:', error);
+      return 0;
     }
   };
 
@@ -133,7 +160,7 @@ export function Sidebar({
             {views.map((view) => {
               const Icon = view.icon;
               const isActive = currentView === view.id && !currentList;
-              const count = view.id === 'today' ? getTaskCount('today') : undefined;
+              const count = view.id === 'today' ? todayCount : undefined;
               
               return (
                 <motion.button
@@ -211,7 +238,7 @@ export function Sidebar({
               >
                 {lists.map((list) => {
                   const isActive = currentList === list.id;
-                  const count = getTaskCount('list', list.id);
+                  const count = listTaskCounts[list.id] || 0;
                   
                   return (
                     <motion.button
