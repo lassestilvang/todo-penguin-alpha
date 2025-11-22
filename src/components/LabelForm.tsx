@@ -5,9 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Palette, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label as UILabel } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { LabelType } from '@/types';
+import { Label as LabelType } from '@/types';
 
 interface LabelFormProps {
   label?: LabelType;
@@ -74,7 +74,7 @@ export function LabelForm({ label, isOpen, onClose, onSubmit }: LabelFormProps) 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Name */}
           <div>
-            <Label htmlFor="name" className="text-white">Label Name</Label>
+            <UILabel htmlFor="name" className="text-white">Label Name</UILabel>
             <Input
               id="name"
               value={formData.name}
@@ -87,7 +87,7 @@ export function LabelForm({ label, isOpen, onClose, onSubmit }: LabelFormProps) 
 
           {/* Icon Selection */}
           <div>
-            <Label className="text-white">Icon</Label>
+            <UILabel className="text-white">Icon</UILabel>
             <div className="flex items-center gap-2">
               <Button
                 type="button"
@@ -132,7 +132,7 @@ export function LabelForm({ label, isOpen, onClose, onSubmit }: LabelFormProps) 
 
           {/* Color Selection */}
           <div>
-            <Label className="text-white">Color</Label>
+            <UILabel className="text-white">Color</UILabel>
             <div className="flex items-center gap-2">
               <Button
                 type="button"
