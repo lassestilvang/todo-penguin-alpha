@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Calendar, Clock, Flag, Tag, Repeat, Paperclip } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -40,11 +40,21 @@ export function TaskForm({ task, lists, labels, onSubmit, onCancel, className }:
     recurring_config: task?.recurring_config || undefined,
   });
 
-  const [taskLists] = useState<List[]>(lists || ListService.getAllLists());
-  const [taskLabels] = useState<LabelType[]>(labels || LabelService.getAllLabels());
+  const [taskLists, setTaskLists] = useState<List[]>(lists || []);
+  const [taskLabels, setTaskLabels] = useState<LabelType[]>(labels || []);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Load lists and labels if not provided
+  useEffect(() => {
+    if (!lists || lists.length === 0) {
+      ClientListService.getLists().then(setTaskLists);
+    }
+    if (!labels || labels.length === 0) {
+      ClientLabelService.getLabels().then(setTaskLabels);
+    }
+  }, [lists, labels]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     let finalData = { ...formData };
@@ -61,12 +71,14 @@ export function TaskForm({ task, lists, labels, onSubmit, onCancel, className }:
       }
     }
 
-    const result = task 
-      ? TaskService.updateTask(task.id, finalData)
-      : TaskService.createTask(finalData);
+    try {
+      const result = task 
+        ? await ClientTaskService.updateTask(task.id, finalData)
+        : await ClientTaskService.createTask(finalData);
 
-    if (result) {
       onSubmit(result);
+    } catch (error) {
+      console.error('Error saving task:', error);
     }
   };
 
