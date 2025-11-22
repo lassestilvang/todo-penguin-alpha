@@ -3,7 +3,7 @@ import { List } from '@/types';
 
 export class ListService {
   static createList(name: string, color: string = '#3b82f6', emoji: string = '📋'): List {
-    const stmt = db.query('INSERT INTO lists (name, color, emoji) VALUES (?, ?, ?)');
+    const stmt = db.prepare('INSERT INTO lists (name, color, emoji) VALUES (?, ?, ?)');
     const result = stmt.run(name, color, emoji);
     
     return this.getListById(result.lastInsertRowid as number)!;
@@ -35,7 +35,7 @@ export class ListService {
       updates.push('updated_at = CURRENT_TIMESTAMP');
       values.push(id);
 
-      const stmt = db.query(`UPDATE lists SET ${updates.join(', ')} WHERE id = ?`);
+      const stmt = db.prepare(`UPDATE lists SET ${updates.join(', ')} WHERE id = ?`);
       stmt.run(...values);
     }
 
@@ -47,26 +47,26 @@ export class ListService {
     if (id === 1) return false;
 
     // Move all tasks to Inbox before deleting
-    db.query('UPDATE tasks SET list_id = 1 WHERE list_id = ?').run(id);
+    db.prepare('UPDATE tasks SET list_id = 1 WHERE list_id = ?').run(id);
     
-    const stmt = db.query('DELETE FROM lists WHERE id = ?');
+    const stmt = db.prepare('DELETE FROM lists WHERE id = ?');
     const result = stmt.run(id);
     
     return result.changes > 0;
   }
 
   static getListById(id: number): List | null {
-    const stmt = db.query('SELECT * FROM lists WHERE id = ?');
+    const stmt = db.prepare('SELECT * FROM lists WHERE id = ?');
     return stmt.get(id) as List | null;
   }
 
   static getAllLists(): List[] {
-    const stmt = db.query('SELECT * FROM lists ORDER BY created_at ASC');
+    const stmt = db.prepare('SELECT * FROM lists ORDER BY created_at ASC');
     return stmt.all() as List[];
   }
 
   static getTaskCount(listId: number): number {
-    const stmt = db.query('SELECT COUNT(*) as count FROM tasks WHERE list_id = ?');
+    const stmt = db.prepare('SELECT COUNT(*) as count FROM tasks WHERE list_id = ?');
     const result = stmt.get(listId) as { count: number };
     return result.count;
   }

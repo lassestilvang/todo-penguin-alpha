@@ -43,7 +43,6 @@ export function TaskList({ filters, className }: TaskListProps) {
         if (filters.listId && task.list_id !== filters.listId) return false;
         if (filters.priority && task.priority !== filters.priority) return false;
         if (filters.status && task.status !== filters.status) return false;
-        if (filters.date && task.date !== filters.date) return false;
         if (filters.searchQuery && !task.name.toLowerCase().includes(filters.searchQuery.toLowerCase())) return false;
         if (!filters.showCompleted && task.status === 'completed') return false;
         return true;

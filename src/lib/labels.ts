@@ -3,7 +3,7 @@ import { Label } from '@/types';
 
 export class LabelService {
   static createLabel(name: string, color: string = '#10b981', icon: string = '🏷️'): Label {
-    const stmt = db.query('INSERT INTO labels (name, color, icon) VALUES (?, ?, ?)');
+    const stmt = db.prepare('INSERT INTO labels (name, color, icon) VALUES (?, ?, ?)');
     const result = stmt.run(name, color, icon);
     
     return this.getLabelById(result.lastInsertRowid as number)!;
@@ -32,7 +32,7 @@ export class LabelService {
     }
 
     if (updates.length > 0) {
-      const stmt = db.query(`UPDATE labels SET ${updates.join(', ')} WHERE id = ?`);
+      const stmt = db.prepare(`UPDATE labels SET ${updates.join(', ')} WHERE id = ?`);
       values.push(id);
       stmt.run(...values);
     }
@@ -41,29 +41,29 @@ export class LabelService {
   }
 
   static deleteLabel(id: number): boolean {
-    const stmt = db.query('DELETE FROM labels WHERE id = ?');
+    const stmt = db.prepare('DELETE FROM labels WHERE id = ?');
     const result = stmt.run(id);
     
     return result.changes > 0;
   }
 
   static getLabelById(id: number): Label | null {
-    const stmt = db.query('SELECT * FROM labels WHERE id = ?');
+    const stmt = db.prepare('SELECT * FROM labels WHERE id = ?');
     return stmt.get(id) as Label | null;
   }
 
   static getAllLabels(): Label[] {
-    const stmt = db.query('SELECT * FROM labels ORDER BY name ASC');
+    const stmt = db.prepare('SELECT * FROM labels ORDER BY name ASC');
     return stmt.all() as Label[];
   }
 
   static getLabelByName(name: string): Label | null {
-    const stmt = db.query('SELECT * FROM labels WHERE name = ?');
+    const stmt = db.prepare('SELECT * FROM labels WHERE name = ?');
     return stmt.get(name) as Label | null;
   }
 
   static getTaskCount(labelId: number): number {
-    const stmt = db.query('SELECT COUNT(*) as count FROM task_labels WHERE label_id = ?');
+    const stmt = db.prepare('SELECT COUNT(*) as count FROM task_labels WHERE label_id = ?');
     const result = stmt.get(labelId) as { count: number };
     return result.count;
   }

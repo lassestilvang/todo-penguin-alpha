@@ -4,7 +4,7 @@ import { format, isToday, addDays, parseISO } from 'date-fns';
 
 export class TaskService {
   private static logActivity(taskId: number, action: string, oldValue?: string, newValue?: string): void {
-    const stmt = db.query(`
+    const stmt = db.prepare(`
       INSERT INTO activity_logs (task_id, action, old_value, new_value, changed_at)
       VALUES (?, ?, ?, ?, ?)
     `);
@@ -12,7 +12,7 @@ export class TaskService {
   }
 
   static createTask(data: CreateTaskData): Task {
-    const stmt = db.query(`
+    const stmt = db.prepare(`
       INSERT INTO tasks (
         name, description, list_id, date, deadline, estimate_minutes, 
         priority, parent_task_id, recurring_type, recurring_config
@@ -36,7 +36,7 @@ export class TaskService {
 
     // Add labels if provided
     if (data.label_ids && data.label_ids.length > 0) {
-      const labelStmt = db.query('INSERT INTO task_labels (task_id, label_id) VALUES (?, ?)');
+      const labelStmt = db.prepare('INSERT INTO task_labels (task_id, label_id) VALUES (?, ?)');
       for (const labelId of data.label_ids) {
         labelStmt.run(taskId, labelId);
       }
@@ -139,18 +139,18 @@ export class TaskService {
       updates.push('updated_at = CURRENT_TIMESTAMP');
       values.push(id);
 
-      const stmt = db.query(`UPDATE tasks SET ${updates.join(', ')} WHERE id = ?`);
+      const stmt = db.prepare(`UPDATE tasks SET ${updates.join(', ')} WHERE id = ?`);
       stmt.run(...values);
     }
 
     // Update labels if provided
     if (data.label_ids !== undefined) {
       // Remove existing labels
-      db.query('DELETE FROM task_labels WHERE task_id = ?').run(id);
+      db.prepare('DELETE FROM task_labels WHERE task_id = ?').run(id);
       
       // Add new labels
       if (data.label_ids.length > 0) {
-        const labelStmt = db.query('INSERT INTO task_labels (task_id, label_id) VALUES (?, ?)');
+        const labelStmt = db.prepare('INSERT INTO task_labels (task_id, label_id) VALUES (?, ?)');
         for (const labelId of data.label_ids) {
           labelStmt.run(id, labelId);
         }
@@ -166,43 +166,43 @@ export class TaskService {
 
     this.logActivity(id, 'deleted', JSON.stringify(task), undefined);
     
-    const stmt = db.query('DELETE FROM tasks WHERE id = ?');
+    const stmt = db.prepare('DELETE FROM tasks WHERE id = ?');
     const result = stmt.run(id);
     
     return result.changes > 0;
   }
 
   static getTaskById(id: number): Task | null {
-    const task = db.query(`
+    const task = db.prepare(`
       SELECT * FROM tasks WHERE id = ?
     `).get(id) as Task | undefined;
 
     if (!task) return null;
 
     // Load related data
-    task.list = db.query('SELECT * FROM lists WHERE id = ?').get(task.list_id) as any;
-    task.labels = db.query(`
+    task.list = db.prepare('SELECT * FROM lists WHERE id = ?').get(task.list_id) as any;
+    task.labels = db.prepare(`
       SELECT l.* FROM labels l
       JOIN task_labels tl ON l.id = tl.label_id
       WHERE tl.task_id = ?
     `).all(task.id) as any[];
     
-    task.subtasks = db.query(`
+    task.subtasks = db.prepare(`
       SELECT * FROM tasks WHERE parent_task_id = ?
       ORDER BY created_at ASC
     `).all(task.id) as any[];
 
-    task.reminders = db.query(`
+    task.reminders = db.prepare(`
       SELECT * FROM reminders WHERE task_id = ?
       ORDER BY remind_at ASC
     `).all(task.id) as any[];
 
-    task.attachments = db.query(`
+    task.attachments = db.prepare(`
       SELECT * FROM attachments WHERE task_id = ?
       ORDER BY created_at DESC
     `).all(task.id) as any[];
 
-    task.activity_logs = db.query(`
+    task.activity_logs = db.prepare(`
       SELECT * FROM activity_logs WHERE task_id = ?
       ORDER BY changed_at DESC
     `).all(task.id) as any[];
@@ -284,7 +284,7 @@ export class TaskService {
 
     query += ' ORDER BY CASE WHEN deadline IS NOT NULL THEN deadline ELSE date END ASC, created_at DESC';
 
-    const tasks = db.query(query).all(...params) as Task[];
+    const tasks = db.prepare(query).all(...params) as Task[];
 
     // Load related data for each task
     return tasks.map(task => this.getTaskById(task.id)!);

@@ -89,9 +89,9 @@ db.exec(`
 `);
 
 // Insert default Inbox list if it doesn't exist
-const inboxExists = db.query('SELECT COUNT(*) as count FROM lists WHERE name = ?').get('Inbox') as { count: number };
+const inboxExists = db.prepare('SELECT COUNT(*) as count FROM lists WHERE name = ?').get('Inbox') as { count: number };
 if (inboxExists.count === 0) {
-  db.query('INSERT INTO lists (name, color, emoji) VALUES (?, ?, ?)').run('Inbox', '#3b82f6', '📥');
+  db.prepare('INSERT INTO lists (name, color, emoji) VALUES (?, ?, ?)').run('Inbox', '#3b82f6', '📥');
 }
 
 export default db;
