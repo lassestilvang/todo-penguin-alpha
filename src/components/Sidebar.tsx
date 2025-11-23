@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Calendar, 
@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { List, Label, ViewType } from '@/types';
-import { ClientListService, ClientLabelService, ClientTaskService } from '@/lib/client-services';
+import { ClientListService, ClientLabelService } from '@/lib/client-services';
 import { ListForm } from './ListForm';
 import { LabelForm } from './LabelForm';
 import { cn } from '@/lib/utils';
@@ -63,14 +63,14 @@ export function Sidebar({
 
   const loadData = useCallback(async () => {
     try {
-      const [listsData, labelsData, todayTasks] = await Promise.all([
+      const [listsData, labelsData] = await Promise.all([
         ClientListService.getLists(),
         ClientLabelService.getLabels(),
-        ClientTaskService.getTasks('today', false)
       ]);
+      
       setLists(listsData);
       setLabels(labelsData);
-      setTodayCount(todayTasks.length);
+      setTodayCount(0); // TODO: Get actual today count from task service
       
       // Load task counts for each list
       const counts: Record<number, number> = {};
@@ -86,6 +86,12 @@ export function Sidebar({
       console.error('Failed to load data:', error);
     }
   }, []);
+
+  // Load data on component mount
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadData();
+  }, [loadData]);
 
   const toggleSection = (section: 'lists' | 'labels') => {
     setExpandedSections(prev => ({

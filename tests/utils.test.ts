@@ -1,5 +1,6 @@
-import { describe, test, expect } from 'bun:test';
+import { describe, test, expect } from '../tests/test-utils';
 import { formatMinutes, parseNaturalLanguage } from '../src/lib/utils';
+import '../tests/setup';
 
 describe('Utility Functions', () => {
   describe('formatMinutes', () => {
